@@ -44,6 +44,20 @@ app.add_middleware(
     allow_methods=["GET","POST","PUT","DELETE"],
     allow_headers=["*"],
 )
+def get_json(file_name):
+    # JSONファイルの有無を確認
+    if os.path.isfile(file_name) == True:
+        # あったら読み込んでjson_dictに代入
+        with open(file_name, 'r') as f:
+            return json.loads(f.read())
+    else:
+        return {"items": []}
+
+def add_json(content):
+    json_dict = get_json("items.json")
+    json_dict["items"].append(content)
+    with open("items.json", 'w') as f:
+        json.dump(json_dict, f, indent=2, ensure_ascii=False)
 
 """
 @app.get("/")：パスオペレーションデコレータ
@@ -59,10 +73,19 @@ GETオペレーションを使ったURL「/」へのリクエストを受け取�
 def root():
     return {"message": "Hello, world!"} # レスポンス
 
-@app.post("/items") # /itemsへのリクエストをポストメソッドで受け取る
-def add_item(name: str = Form(...)): # Form()：フォームからの入力を受け取る
+@app.get("/items")
+def get_items():
+    return get_json("items.json")
+
+"""
+@app.post("/items")：/itemsへのリクエストをポストメソッドで受け取る
+Form()：フォームからの入力を受け取る
+"""
+@app.post("/items") 
+def add_item(name: str = Form(...), category: str = Form(...)):
     # logger.info：このアプリを起動したウィンドウに表示されるイベントの報告
-    logger.info(f"Receive item: {name}")
+    add_json({"name": name, "category": category})
+    logger.info(f"Receive item: {name} {category}")
     return {"message": f"item received: {name}"}
 
 # format文字列と同様のシンタックスで「パスパラメータ」や「パス変数」を宣言できる
@@ -79,3 +102,9 @@ async def get_image(image_filename):
         image = images / "default.jpg"
 
     return FileResponse(image)
+
+def main():
+    print(get_json("items.json"))
+
+if __name__ == '__main__':
+    main()
