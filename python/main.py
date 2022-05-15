@@ -9,6 +9,7 @@ from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse # 
 # CORSMiddleware：CORSに関する設定ができるミドルウェア
 from fastapi.middleware.cors import CORSMiddleware
+import sqlite3
 
 # FastAPIの「インスタンス」を生成
 # uvicornコマンド内のappおよび以下の@appは全てこのインスタンスを指している
@@ -44,6 +45,7 @@ app.add_middleware(
     allow_methods=["GET","POST","PUT","DELETE"],
     allow_headers=["*"],
 )
+
 def get_json(file_name):
     # JSONファイルの有無を確認
     if os.path.isfile(file_name) == True:
@@ -75,7 +77,12 @@ def root():
 
 @app.get("/items")
 def get_items():
-    return get_json("items.json")
+    con = sqlite3.connect('../db/mercari.sqlite3') # DBに接続
+    cur = con.cursor() # SQLiteを操作するカーソルオブジェクト
+    cur.execute("SELECT * FROM items") # SQL文を実行
+    items_list = {"items": [{"name": row[1], "category": row[2]} for row in cur]}
+    con.close() # 接続を切る
+    return items_list
 
 """
 @app.post("/items")：/itemsへのリクエストをポストメソッドで受け取る
@@ -84,7 +91,12 @@ Form()：フォームからの入力を受け取る
 @app.post("/items") 
 def add_item(name: str = Form(...), category: str = Form(...)):
     # logger.info：このアプリを起動したウィンドウに表示されるイベントの報告
-    add_json({"name": name, "category": category})
+    con = sqlite3.connect('../db/mercari.sqlite3')
+    cur = con.cursor()
+    # SQL文の中の変数を入れたい場所に?を書き、第二引数でその値を指定
+    cur.execute("INSERT INTO items(name, category) VALUES(?, ?)", [name, category])
+    con.commit() # データを保存
+    con.close()
     logger.info(f"Receive item: {name} {category}")
     return {"message": f"item received: {name}"}
 
@@ -104,7 +116,8 @@ async def get_image(image_filename):
     return FileResponse(image)
 
 def main():
-    print(get_json("items.json"))
+    add_item("itemB", "categoryB")
+    print(get_items())
 
 if __name__ == '__main__':
     main()
