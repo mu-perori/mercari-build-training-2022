@@ -61,6 +61,14 @@ def add_json(content):
     with open("items.json", 'w') as f:
         json.dump(json_dict, f, indent=2, ensure_ascii=False)
 
+def get_data(command, value = ()):
+    con = sqlite3.connect('../db/mercari.sqlite3') # DBに接続
+    cur = con.cursor() # SQLiteを操作するカーソルオブジェクト
+    cur.execute(command, value) # SQL文を実行
+    table = [row for row in cur]
+    con.close() # 接続を切る
+    return table
+
 """
 @app.get("/")：パスオペレーションデコレータ
 @something：デコレータ。関数の上に書く。直下の関数を受け取ってそれを使って何かする。
@@ -77,11 +85,15 @@ def root():
 
 @app.get("/items")
 def get_items():
-    con = sqlite3.connect('../db/mercari.sqlite3') # DBに接続
-    cur = con.cursor() # SQLiteを操作するカーソルオブジェクト
-    cur.execute("SELECT * FROM items") # SQL文を実行
-    items_list = {"items": [{"name": row[1], "category": row[2]} for row in cur]}
-    con.close() # 接続を切る
+    table = get_data("SELECT * FROM items")
+    items_list = {"items": [{"name": row[1], "category": row[2]} for row in table]}
+    return items_list
+
+@app.get("/search")
+def search_items(keyword: str):
+    # (q,)：タプルは要素が一つの場合末尾にカンマをつける必要がある
+    table = get_data("SELECT * FROM items WHERE name=?", (keyword,))
+    items_list = {"items": [{"name": row[1], "category": row[2]} for row in table]}
     return items_list
 
 """
@@ -94,7 +106,7 @@ def add_item(name: str = Form(...), category: str = Form(...)):
     con = sqlite3.connect('../db/mercari.sqlite3')
     cur = con.cursor()
     # SQL文の中の変数を入れたい場所に?を書き、第二引数でその値を指定
-    cur.execute("INSERT INTO items(name, category) VALUES(?, ?)", [name, category])
+    cur.execute("INSERT INTO items(name, category) VALUES(?, ?)", (name, category))
     con.commit() # データを保存
     con.close()
     logger.info(f"Receive item: {name} {category}")
@@ -116,8 +128,8 @@ async def get_image(image_filename):
     return FileResponse(image)
 
 def main():
-    add_item("itemB", "categoryB")
-    print(get_items())
+    # add_item("itemB", "categoryB")
+    print(get_data("SELECT * FROM items WHERE name=?", ("itemA",)))
 
 if __name__ == '__main__':
     main()
