@@ -2,10 +2,11 @@ import os
 import logging # あるソフトウェアが実行されているときに起こったイベントを追跡する
 import pathlib # ファイルシステムのパスを表すクラスを提供
 import json
+import hashlib # ハッシュを求めるライブラリ
 # FastAPI：APIのすべての機能を提供するPythonクラス
 # Form：JSONの代わりにフィールドを受け取る
 # HTTPException：
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse # 
 # CORSMiddleware：CORSに関する設定ができるミドルウェア
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +23,7 @@ __file__：実行中のファイルの場所(パス)
 parent：現在の階層の一つ上のパスを返す
 resolve()：絶対パスに変換
 /演算子：Pathオブジェクトに対して使うとパスが連結される
-images = <<main.pyのパス>-"/main.py"したものの絶対パス>/image
+images = <<main.pyのパス>-"/main.py"の絶対パス>/image
        = .../python/image
 """
 images = pathlib.Path(__file__).parent.resolve() / "image"
@@ -69,6 +70,10 @@ def get_data(command, value = ()):
     con.close() # 接続を切る
     return table
 
+def get_hash(s: str):
+    file_name, extension = s.split(".")
+    return hashlib.sha256(file_name.encode()).hexdigest()+"."+extension
+
 """
 @app.get("/")：パスオペレーションデコレータ
 @something：デコレータ。関数の上に書く。直下の関数を受け取ってそれを使って何かする。
@@ -86,7 +91,7 @@ def root():
 @app.get("/items")
 def get_items():
     table = get_data("SELECT * FROM items")
-    items_list = {"items": [{"name": row[1], "category": row[2]} for row in table]}
+    items_list = {"items": [{"name": row[1], "category": row[2], "image_filename": row[3]} for row in table]}
     return items_list
 
 @app.get("/search")
@@ -99,17 +104,20 @@ def search_items(keyword: str):
 """
 @app.post("/items")：/itemsへのリクエストをポストメソッドで受け取る
 Form()：フォームからの入力を受け取る
+File()：ファイルを受け取る
+UploadFile：Fileのラッパークラス。より大きなファイルでも操作可能。
 """
 @app.post("/items") 
-def add_item(name: str = Form(...), category: str = Form(...)):
-    # logger.info：このアプリを起動したウィンドウに表示されるイベントの報告
+def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile = File(...)):
+    image_hash = get_hash(image.filename)
     con = sqlite3.connect('../db/mercari.sqlite3')
     cur = con.cursor()
     # SQL文の中の変数を入れたい場所に?を書き、第二引数でその値を指定
-    cur.execute("INSERT INTO items(name, category) VALUES(?, ?)", (name, category))
+    cur.execute("INSERT INTO items(name, category, image_filename) VALUES(?, ?, ?)", (name, category, image_hash))
     con.commit() # データを保存
     con.close()
-    logger.info(f"Receive item: {name} {category}")
+    # logger.info：このアプリを起動したウィンドウに表示されるイベントの報告
+    logger.info(f"Receive item: {name} {category} {image.filename}")
     return {"message": f"item received: {name}"}
 
 # format文字列と同様のシンタックスで「パスパラメータ」や「パス変数」を宣言できる
@@ -129,7 +137,8 @@ async def get_image(image_filename):
 
 def main():
     # add_item("itemB", "categoryB")
-    print(get_data("SELECT * FROM items WHERE name=?", ("itemA",)))
+    # print(get_data("SELECT * FROM items WHERE name=?", ("itemA",)))
+    print(get_hash("image.jpg"))
 
 if __name__ == '__main__':
     main()
