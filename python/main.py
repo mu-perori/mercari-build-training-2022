@@ -23,10 +23,10 @@ __file__：実行中のファイルの場所(パス)
 parent：現在の階層の一つ上のパスを返す
 resolve()：絶対パスに変換
 /演算子：Pathオブジェクトに対して使うとパスが連結される
-images = <<main.pyのパス>-"/main.py"の絶対パス>/image
-       = .../python/image
+images = <<main.pyのパス>-"/main.py"の絶対パス>/images
+       = .../python/images
 """
-images = pathlib.Path(__file__).parent.resolve() / "image"
+images = pathlib.Path(__file__).parent.resolve() / "images"
 # os.environ.get：環境変数を取得。無い場合は第二引数の値になる。
 origins = [ os.environ.get('FRONT_URL', 'http://localhost:3000') ]
 """
@@ -90,7 +90,7 @@ def root():
 
 @app.get("/items")
 def get_items():
-    table = get_data("SELECT * FROM items")
+    table = get_data("SELECT i.id, i.name, c.name, i.image_filename FROM category c, items i WHERE c.id=i.category")
     items_list = {"items": [{"name": row[1], "category": row[2], "image_filename": row[3]} for row in table]}
     return items_list
 
