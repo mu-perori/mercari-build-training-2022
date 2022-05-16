@@ -101,6 +101,12 @@ def search_items(keyword: str):
     items_list = {"items": [{"name": row[1], "category": row[2]} for row in table]}
     return items_list
 
+@app.get("/items/{item_id}")
+def get_detail(item_id):
+    table, = get_data("SELECT * FROM items WHERE id=?", (item_id,))
+    item_detail = {"name": table[1], "category": table[2], "image_filename": table[3]}
+    return item_detail
+
 """
 @app.post("/items")：/itemsへのリクエストをポストメソッドで受け取る
 Form()：フォームからの入力を受け取る
