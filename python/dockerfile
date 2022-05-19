@@ -1,4 +1,16 @@
-FROM alpine
+# syntax=docker/dockerfile:1
 
-# STEP4-4では以下は変更しない
-CMD ["python", "-V"]
+FROM python:3.8-slim-buster
+
+WORKDIR /db
+
+COPY db/mercari.sqlite3 mercari.sqlite3
+
+WORKDIR /python
+
+COPY python/requirements.txt requirements.txt
+COPY python/main.py main.py
+
+RUN pip3 install -r requirements.txt
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000"]
