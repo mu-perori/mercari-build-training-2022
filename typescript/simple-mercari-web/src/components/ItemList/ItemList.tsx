@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+// useEffect：関数の実行タイミングをReactのレンダリング後まで遅らせるhook
 
 interface Item {
   id: number;
@@ -32,6 +33,7 @@ export const ItemList: React.FC<Prop> = (props) => {
       .then(data => {
         console.log('GET success:', data);
         setItems(data);
+        // onLoadCompletedが存在するときのみonLoadCompleted()を実行する
         onLoadCompleted && onLoadCompleted();
       })
       .catch(error => {
@@ -39,6 +41,9 @@ export const ItemList: React.FC<Prop> = (props) => {
       })
   }
 
+  // useEffect(実行させたい副作用関数, 第2引数には副作用関数の実行タイミングを制御する依存データを記述)
+  // reloadに変化があったときのみ第一引数の関数が作動する。
+  // 今回は中にif文があるのでreloadがTrueになったときのみ動作する
   useEffect(() => {
     if (reload) {
       fetchItems();
