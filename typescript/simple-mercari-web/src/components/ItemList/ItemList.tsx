@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 // useEffect：関数の実行タイミングをReactのレンダリング後まで遅らせるhook
 
-interface Item {
-  id: number;
+interface Greeting {
+  greeting_word: string;
   name: string;
-  category: string;
-  image_filename: string;
 };
 
 const server = process.env.API_URL || 'http://127.0.0.1:9000';
@@ -15,14 +13,16 @@ interface Prop {
   reload?: boolean;
   onLoadCompleted?: () => void;
 }
+
 // <ItemList reload={reload} onLoadCompleted={() => setReload(false)} />
 // 上記のように呼び出された場合propsの中身は以下のようになっている。
 // {reload: reload変数の中身, onLoadCompleted: () => setReload(false)}
 export const ItemList: React.FC<Prop> = (props) => {
   const { reload = true, onLoadCompleted } = props;
-  const [items, setItems] = useState<Item[]>([])
+  // 連想配列をphraseに代入するから初期値も形を合わせる
+  const [phrase, setPhrase] = useState<Greeting>({greeting_word: "", name:""});
   const fetchItems = () => {
-    fetch(server.concat('/items'),
+    fetch(server.concat('/hello'),
       {
         method: 'GET',
         mode: 'cors',
@@ -35,7 +35,7 @@ export const ItemList: React.FC<Prop> = (props) => {
       .then(response => response.json())
       .then(data => {
         console.log('GET success:', data);
-        setItems(data.items);
+        setPhrase(data);
         // onLoadCompletedが存在するときのみonLoadCompleted()を実行する
         onLoadCompleted && onLoadCompleted();
       })
@@ -52,22 +52,5 @@ export const ItemList: React.FC<Prop> = (props) => {
       fetchItems();
     }
   }, [reload]);
-
-  return (
-    <div>
-      {items.map((item) => {
-        return (
-          <div key={item.id} className='ItemList'>
-            {/* TODO: Task 1: Replace the placeholder image with the item image */}
-            <img src={placeholderImage} />
-            <p>
-              <span>Name: {item.name}</span>
-              <br />
-              <span>Category: {item.category}</span>
-            </p>
-          </div>
-        )
-      })}
-    </div>
-  )
+  return <p>{phrase.greeting_word}{phrase.name}</p>
 };

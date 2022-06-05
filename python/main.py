@@ -90,6 +90,10 @@ GETオペレーションを使ったURL「/」へのリクエストを受け取�
 def root():
     return {"message": "Hello, world!"} # レスポンス
 
+@app.get("/hello")
+def root():
+    return {"greeting_word": "Hello,", "name": " world!"} # レスポンス
+
 @app.get("/items")
 def get_items():
     table = get_data("SELECT i.id, i.name, c.name, i.image_filename FROM category c, items i WHERE c.id=i.category")
