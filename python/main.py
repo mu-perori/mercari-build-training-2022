@@ -123,6 +123,7 @@ def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile
     con.commit() # データを保存
     con.close()
     # logger.info：このアプリを起動したウィンドウに表示されるイベントの報告
+    # f"文字列 {変数名}"：format文字列(f文字列)：文字列に直接変数を入れられる書き方
     logger.info(f"Receive item: {name} {category} {image.filename}")
     return {"message": f"item received: {name}"}
 
