@@ -41,10 +41,17 @@ export const Listing: React.FC<Prop> = (props) => {
   // 型の宣言はよくわからないけどフォームへの入力を受け取ってvaluesを変更する関数
   // 送信ボタンを押されていなくても入力された段階でこの関数が実行される
   // つまり逐次valuesが更新される。
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // ...values：valuesを展開している
     // 「同じkeyが2回出てきたら2回目が優先されるからこの書き方」ってことか？
-    setValues({ ...values, [event.target.name]: event.target.value });
+    setValues({
+      ...values, [event.target.name]: event.target.value,
+    })
+  };
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValues({
+      ...values, [event.target.name]: event.target.files![0],
+    })
   };
 
   // これも型の宣言はわからんけどフォームの送信ボタンが押された時に実行される関数
@@ -69,11 +76,10 @@ export const Listing: React.FC<Prop> = (props) => {
       mode: 'cors', // デフォルトもcors
       body: data,
     })
-      .then(response => response.json()) // response：HTTPレスポンス全体
-      .then(data => {
-        console.log('POST success:', data);
+      .then(response => {
+        console.log('POST status:', response.statusText);
         onListingCompleted && onListingCompleted();
-      })
+      })// response：HTTPレスポンス全体
       .catch((error) => {
         console.error('POST error:', error);
       })
@@ -84,9 +90,9 @@ export const Listing: React.FC<Prop> = (props) => {
     <div className='Listing'>
       <form onSubmit={onSubmit}>
         <div>
-          <input type='text' name='name' id='name' placeholder='name' onChange={onChange} required />
-          <input type='text' name='category' id='category' placeholder='category' onChange={onChange} />
-          <input type='file' name='image' id='image' placeholder='image' onChange={onChange} />
+          <input type='text' name='name' id='name' placeholder='name' onChange={onValueChange} required />
+          <input type='text' name='category' id='category' placeholder='category' onChange={onValueChange} />
+          <input type='file' name='image' id='image' onChange={onFileChange} required />
           <button type='submit'>List this item</button>
         </div>
       </form>

@@ -18,6 +18,7 @@ app = FastAPI()
 logger = logging.getLogger("uvicorn")
 # INFOレベル以上の情報をコンソールに表示する設定(デフォルトはWARNING)
 logger.level = logging.INFO
+
 """
 __file__：実行中のファイルの場所(パス)
 parent：現在の階層の一つ上のパスを返す
@@ -28,6 +29,7 @@ images = <<main.pyのパス>-"/main.py"の絶対パス>/images
 """
 images = pathlib.Path(__file__).parent.resolve() / "images"
 # os.environ.get：環境変数を取得。無い場合は第二引数の値になる。
+
 origins = [ os.environ.get('FRONT_URL', 'http://localhost:3000') ]
 """
 ミドルウェア：OSとAPの中間で様々なソフトウェアから共通して利用される機能を提供するもの。
@@ -139,8 +141,8 @@ async def get_image(image_filename):
     if not image.exists():
         logger.debug(f"Image not found: {image}")
         image = images / "default.jpg"
-
     return FileResponse(image)
+
 
 def main():
     # add_item("itemB", "categoryB")
