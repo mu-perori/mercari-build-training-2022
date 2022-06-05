@@ -47,7 +47,7 @@ export const Listing: React.FC<Prop> = (props) => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  // これも型の宣言はわからんけどボタンが押されたときに実行される関数
+  // これも型の宣言はわからんけどフォームの送信ボタンが押された時に実行される関数
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // フォームが持つデフォルトの動作(フォームの内容を指定したURLへ送信)をキャンセルする
     event.preventDefault()

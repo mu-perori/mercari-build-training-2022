@@ -15,7 +15,9 @@ interface Prop {
   reload?: boolean;
   onLoadCompleted?: () => void;
 }
-
+// <ItemList reload={reload} onLoadCompleted={() => setReload(false)} />
+// 上記のように呼び出された場合propsの中身は以下のようになっている。
+// {reload: reload変数の中身, onLoadCompleted: () => setReload(false)}
 export const ItemList: React.FC<Prop> = (props) => {
   const { reload = true, onLoadCompleted } = props;
   const [items, setItems] = useState<Item[]>([])
@@ -29,6 +31,7 @@ export const ItemList: React.FC<Prop> = (props) => {
           'Accept': 'application/json'
         },
       })
+      // response.json()：responseに入っているjsonを連想配列にして返す
       .then(response => response.json())
       .then(data => {
         console.log('GET success:', data);
