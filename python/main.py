@@ -28,9 +28,10 @@ images = <<main.pyのパス>-"/main.py"の絶対パス>/images
        = .../python/images
 """
 images = pathlib.Path(__file__).parent.resolve() / "images"
-# os.environ.get：環境変数を取得。無い場合は第二引数の値になる。
 
+# os.environ.get：環境変数を取得。無い場合は第二引数の値になる。
 origins = [ os.environ.get('FRONT_URL', 'http://localhost:3000') ]
+
 """
 ミドルウェア：OSとAPの中間で様々なソフトウェアから共通して利用される機能を提供するもの。
 オリジン：プロトコルとドメインとポートの組み合わせ。(例：http://localhost:3000)
